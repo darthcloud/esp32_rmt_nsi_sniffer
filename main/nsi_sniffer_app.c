@@ -4,7 +4,7 @@
  *
 */
 
-#include <esp_private/esp_timer_impl.h>
+#include <esp_timer.h>
 #include <driver/rmt.h>
 
 #define NSI_FRAME_MAX 64
@@ -45,7 +45,7 @@ static const uint8_t NSI_CMD_LEN[256] = {
 /* 0xF8 */ 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01
 };
 
-static uint64_t cur_us = 0;
+static uint32_t cur_us = 0;
 static uint8_t nsi_frame[NSI_FRAME_MAX];
 
 static uint8_t IRAM_ATTR nsi_bit_parser(rmt_item32_t *items, uint8_t *data) {
@@ -79,7 +79,7 @@ static void IRAM_ATTR rmt_isr(void *arg) {
     const uint32_t intr_st = RMT.int_st.val;
     uint32_t status = intr_st;
     uint8_t i, channel;
-    uint64_t pre_us;
+    uint32_t pre_us;
 
     while (status) {
         i = __builtin_ffs(status) - 1;
@@ -92,8 +92,8 @@ static void IRAM_ATTR rmt_isr(void *arg) {
                 RMT.conf_ch[channel].conf1.mem_owner = RMT_MEM_OWNER_TX;
 
                 pre_us = cur_us;
-                cur_us = esp_timer_impl_get_time();
-                ets_printf("+%07u: ", (cur_us - pre_us));
+                cur_us = xthal_get_ccount();;
+                ets_printf("+%07u: ", (cur_us - pre_us)/CONFIG_ESP32_DEFAULT_CPU_FREQ_MHZ);
                 nsi_bit_parser((rmt_item32_t *)RMTMEM.chan[channel].data32, nsi_frame);
 
                 RMT.conf_ch[channel].conf1.mem_wr_rst = 1;
@@ -116,7 +116,7 @@ void app_main() {
     rmt_config_t config;
 
     config.channel       = RMT_CHANNEL_0;
-    config.gpio_num      = GPIO_NUM_26;
+    config.gpio_num      = GPIO_NUM_19;
     config.clk_div       = 40; /* 80MHz (APB CLK) / 40 = 0.5us TICK */
     config.mem_block_num = 8;  /* Assign all channels RMTMEM to channel 0 */
     config.rmt_mode      = RMT_MODE_RX;
