@@ -8,7 +8,7 @@
 #include <driver/rmt.h>
 
 #define NSI_FRAME_MAX 64
-#define NSI_BIT_PERIOD_TICKS 8
+#define NSI_BIT_PERIOD_TICKS 10
 
 static const uint8_t NSI_CMD_LEN[256] = {
 /* 0x00 */ 0x01, 0x01, 0x03, 0x23, 0x00, 0x00, 0x00, 0x00,
