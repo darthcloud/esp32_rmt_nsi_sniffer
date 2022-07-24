@@ -5,10 +5,19 @@
 */
 
 #include <esp_timer.h>
+#include "soc/rmt_struct.h"
 #include <driver/rmt.h>
+#include <hal/rmt_ll.h>
+
+#define SYSTEM_N64
 
 #define NSI_FRAME_MAX 64
+
+#ifdef SYSTEM_N64
 #define NSI_BIT_PERIOD_TICKS 8
+#else /* GAMECUBE */
+#define NSI_BIT_PERIOD_TICKS 10
+#endif
 
 static const uint8_t NSI_CMD_LEN[256] = {
 /* 0x00 */ 0x01, 0x01, 0x03, 0x23, 0x00, 0x00, 0x00, 0x00,
